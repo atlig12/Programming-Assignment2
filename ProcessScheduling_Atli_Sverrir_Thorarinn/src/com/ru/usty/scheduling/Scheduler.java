@@ -20,6 +20,7 @@ public class Scheduler {
 	Queue<Integer> processQueue;
 	PriorityQueue<ProcessHelper> sQueue;
 	int runningProcess;
+	Queue<Integer> processQueueRR;
 	
 	/**
 	 * Add any objects and variables here (if needed)
