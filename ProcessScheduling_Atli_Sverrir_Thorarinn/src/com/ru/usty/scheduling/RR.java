@@ -13,23 +13,22 @@ public class RR {
 	int elapsedWaitingTime;
 	int elapsedExecutionTime;
 	int totalServiceTime;
+	long timeLimit;
+	int processID;
 	
 	public RR(Scheduler scheduler, ProcessExecution processEx){
 		this.processEx = processEx;
 		this.scheduler = scheduler;
-		
+		this.processID = scheduler.processQueueRR.element();
 	}
 	
 	public int popAndDrop(){
 		
-		int id = this.scheduler.processQueueRR.element();//Get first element.
-		processEx.switchToProcess(id); //Switch to process
-		if(manageRunningTime(id)){
+		processEx.switchToProcess(this.processID); //Switch to process
+		if(manageRunningTime(this.processID)){
 			this.scheduler.processQueueRR.remove(); //remove process from queue
-			this.scheduler.processQueueRR.add(id); //add first element back to queue
+			this.scheduler.processQueueRR.add(this.processID); //add first element back to queue
 		}
-		
-		
 		
 		//for(Object item : this.scheduler.processQueueRR){
 		  //  System.out.println(item.toString());
@@ -37,10 +36,10 @@ public class RR {
 		return 0;
 	}
 	
-	public boolean manageRunningTime(int processID) {
+	public boolean manageRunningTime(int processID) {//Should be set to true when process has gotten 500ms in service time
 		boolean timer = false;
 		while(timer){
-			long timeLimit = this.processEx.getProcessInfo(processID).totalServiceTime;//gets service time
+			this.timeLimit = this.processEx.getProcessInfo(processID).totalServiceTime;//gets service time
 			if(timeLimit == 500){ //quit's loop after 500 mill, 
 				timer = true;
 			}
