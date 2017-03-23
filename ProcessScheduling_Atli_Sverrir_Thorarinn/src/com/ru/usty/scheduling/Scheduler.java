@@ -1,6 +1,5 @@
 package com.ru.usty.scheduling;
 
-import java.util.Iterator;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -14,14 +13,12 @@ import com.ru.usty.scheduling.process.ProcessExecution;
 public class Scheduler {
 
 	ProcessExecution processExecution;
-	RR roundRobin;
 	Policy policy;
 	int quantum;
 	boolean processRunning = false;
 	Queue<Integer> processQueue;
 	PriorityQueue<ProcessHelper> sQueue;
 	int runningProcess;
-	Queue<Integer> processQueueRR;
 	
 	
 	/**
@@ -108,11 +105,15 @@ public class Scheduler {
 
 	}
 	
-	public Thread sleeper(int qnt) {
+	public Thread sleeper(int qnt, int pid) {
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				try {
+					processExecution.switchToProcess(pid);
+					processQueue.remove(pid);
+					processQueue.add(pid);
 					Thread.sleep(qnt);
+					
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -152,26 +153,13 @@ public class Scheduler {
 			break;
 		
 		case RR:
-			
-			//
-			
-			//
 			processQueue.add(processID);
-			int firstItem = processQueue.element();
-			System.out.println("Adding process : " + processID + " To que" + " Item Number: " + firstItem);
-			processExecution.switchToProcess(processID);
-			System.out.println("Switching to process : " + processID + " Item Number: " + firstItem);
-			Thread thread = this.sleeper(quantum);
-			thread.start();
-			if(thread.getState() != Thread.State.TIMED_WAITING) {
-				processQueue.remove(processID);
-				System.out.println("Removing process: " + processID + " Item Number: " + firstItem);
-				processQueue.add(processID);
-				System.out.println("Adding: " + processID + " to the back of que" + " Item Number: " + firstItem);
+			if(!processRunning){
 				processExecution.switchToProcess(processID);
-				System.out.println("Switching to process: " + processID);
-				
+				processRunning = true;
 			}
+			Thread thread = this.sleeper(quantum, processQueue.element());
+			thread.start();
 			
 			break;
 		
@@ -253,11 +241,12 @@ public class Scheduler {
 			break;
 			
 		case RR:
-			processQueue.remove();
+			processQueue.remove(processID);
 			processRunning = false;
 			if(!processQueue.isEmpty()) {
 				int id = processQueue.element(); // retrieve the head of the queue
-				processExecution.switchToProcess(id);
+				Thread thread = this.sleeper(quantum, id);
+				thread.start();
 				processRunning = true;
 			}
 			
