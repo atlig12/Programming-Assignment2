@@ -14,6 +14,7 @@ import com.ru.usty.scheduling.process.ProcessExecution;
 public class Scheduler {
 
 	ProcessExecution processExecution;
+	RR roundRobin;
 	Policy policy;
 	int quantum;
 	boolean processRunning = false;
@@ -21,6 +22,7 @@ public class Scheduler {
 	PriorityQueue<ProcessHelper> sQueue;
 	int runningProcess;
 	Queue<Integer> processQueueRR;
+	
 	
 	/**
 	 * Add any objects and variables here (if needed)
@@ -150,12 +152,25 @@ public class Scheduler {
 			break;
 		
 		case RR:
+			
+			//
+			
+			//
 			processQueue.add(processID);
+			int firstItem = processQueue.element();
+			System.out.println("Adding process : " + processID + " To que" + " Item Number: " + firstItem);
+			processExecution.switchToProcess(processID);
+			System.out.println("Switching to process : " + processID + " Item Number: " + firstItem);
 			Thread thread = this.sleeper(quantum);
 			thread.start();
 			if(thread.getState() != Thread.State.TIMED_WAITING) {
+				processQueue.remove(processID);
+				System.out.println("Removing process: " + processID + " Item Number: " + firstItem);
+				processQueue.add(processID);
+				System.out.println("Adding: " + processID + " to the back of que" + " Item Number: " + firstItem);
 				processExecution.switchToProcess(processID);
-				//processRunning = true;
+				System.out.println("Switching to process: " + processID);
+				
 			}
 			
 			break;
